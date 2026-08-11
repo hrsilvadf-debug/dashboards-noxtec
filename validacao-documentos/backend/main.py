@@ -12,12 +12,27 @@ import secrets
 from datetime import datetime, date, timedelta
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Header, Depends, Query
+from fastapi import FastAPI, HTTPException, Header, Depends, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.staticfiles import StaticFiles as StarletteStaticFiles
 from pydantic import BaseModel
 from typing import Optional, List
+
+# ============================================================
+# StaticFiles COM cache-control (workaround pro header bug)
+# ============================================================
+class CacheControlStaticFiles(StarletteStaticFiles):
+    def __init__(self, *args, **kwargs):
+        self.cache_headers = kwargs.pop("cache_headers", {})
+        super().__init__(*args, **kwargs)
+
+    async def get_response(self, path: str, scope: dict) -> Response:
+        response = await super().get_response(path, scope)
+        for k, v in self.cache_headers.items():
+            response.headers.setdefault(k, v)
+        return response
 
 # ============================================================
 # CONFIGURAÇÃO
@@ -109,10 +124,12 @@ def health():
 
 # Servir frontend estático
 if FRONT_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(FRONT_DIR), headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}), name="static")
+    static_app = CacheControlStaticFiles(directory=str(FRONT_DIR), cache_headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"})
+    app.mount("/static", static_app, name="static")
 elif (BASE_DIR / "index.html").exists():
     # Quando frontend files estão copiados direto no backend
-    app.mount("/static", StaticFiles(directory=str(BASE_DIR), headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}), name="static")
+    static_app = CacheControlStaticFiles(directory=str(BASE_DIR), cache_headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"})
+    app.mount("/static", static_app, name="static")
 
 # ============================================================
 # AUTH
