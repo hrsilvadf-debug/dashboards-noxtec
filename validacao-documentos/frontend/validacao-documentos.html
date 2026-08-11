@@ -623,14 +623,15 @@ function clearFilters() {
       </div>
       <button class="modal-close" onclick="fecharModal()" aria-label="Fechar">✕</button>
     </div>
-    <div class="modal-body" id="modalBody">
-      <!-- preenchido via JS -->
-    </div>
+    <div class="modal-body" id="modalBody"></div>
     <div class="modal-footer">
       <button class="btn-modal btn-modal-ok" onclick="fecharModal()">Fechar</button>
     </div>
   </div>
 </div>
+
+</body>
+</html>
 
 <script>
 function fecharModal() {
@@ -666,7 +667,6 @@ async function verDetalhes(execId) {
   const fmtMs   = v => v ? `${(v/1000).toFixed(1)}s` : '—';
 
   let html = `<div class="detail-grid">
-
     <div class="detail-item">
       <div class="detail-label">Status</div>
       <div class="detail-value">${statusChip}</div>
@@ -675,7 +675,6 @@ async function verDetalhes(execId) {
       <div class="detail-label">Duração</div>
       <div class="detail-value">${fmtMs(item.duracao_ms)}</div>
     </div>
-
     <div class="detail-item">
       <div class="detail-label">Documentos Processados</div>
       <div class="detail-value">${item.total_documentos ?? 0}</div>
@@ -684,7 +683,6 @@ async function verDetalhes(execId) {
       <div class="detail-label">Workflow</div>
       <div class="detail-value sm">${escHtml(item.workflow_nome || '—')}</div>
     </div>
-
     <div class="detail-item">
       <div class="detail-label">Aprovados</div>
       <div class="detail-value" style="color:#059669">${item.documentos_aprovados ?? 0}</div>
@@ -693,12 +691,10 @@ async function verDetalhes(execId) {
       <div class="detail-label">Rejeitados</div>
       <div class="detail-value" style="color:#dc2626">${item.documentos_rejeitados ?? 0}</div>
     </div>
-
     <div class="detail-item detail-full">
       <div class="detail-label">Execution ID</div>
       <div class="detail-value sm">${escHtml(item.execution_id || '—')}</div>
     </div>
-
     <div class="detail-item">
       <div class="detail-label">Iniciado em</div>
       <div class="detail-value sm">${fmtData(item.iniciado_em)}</div>
@@ -707,7 +703,6 @@ async function verDetalhes(execId) {
       <div class="detail-label">Finalizado em</div>
       <div class="detail-value sm">${fmtData(item.finalizado_em)}</div>
     </div>
-
     <div class="detail-item detail-full">
       <div class="detail-label">Nodes Executados</div>
       <div class="nodes-list">${nodesList}</div>
@@ -721,7 +716,6 @@ async function verDetalhes(execId) {
       ${item.erro_node ? `<div style="margin-top:6px;font-size:12px;color:#dc2626;"><strong>Node:</strong> ${escHtml(item.erro_node)}</div>` : ''}
     </div>`;
   }
-
   html += `</div>`;
 
   document.getElementById('modalBody').innerHTML = html;
