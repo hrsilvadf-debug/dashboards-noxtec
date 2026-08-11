@@ -611,31 +611,7 @@ function clearFilters() {
   document.getElementById('filterAte').value    = '';
   setPeriod('30d');
 }
-
-async function verDetalhes(execId) {
-  const d = await api(`/api/dashboard/execucoes?pagina=1&por_pagina=100`);
-  const item = d.items.find(i => i.execution_id === execId);
-  if (!item) return;
-  const nodes = item.nodes_executados || [];
-  const nodesStr = Array.isArray(nodes)
-    ? nodes.map(n => typeof n === 'string' ? n : (n.nome || n.name || JSON.stringify(n))).join(' → ')
-    : '—';
-  alert(
-    `Execução: ${item.execution_id}\n` +
-    `Status: ${item.status}\n` +
-    `Documentos: ${item.total_documentos}\n` +
-    `Aprovados: ${item.documentos_aprovados}\n` +
-    `Rejeitados: ${item.documentos_rejeitados}\n` +
-    `Duração: ${item.duracao_ms}ms\n` +
-    `Iniciado: ${item.iniciado_em}\n` +
-    `Finalizado: ${item.finalizado_em}\n` +
-    `Nodes: ${nodesStr}\n` +
-    (item.erro_mensagem ? `Erro: ${item.erro_mensagem}\nNode erro: ${item.erro_node}` : '')
-  );
-}
 </script>
-</body>
-</html>
 
 <!-- Modal de detalhes -->
 <div id="modalDetalhes" class="modal-overlay" role="dialog" aria-modal="true">
@@ -658,11 +634,13 @@ async function verDetalhes(execId) {
 
 <script>
 function fecharModal() {
-  document.getElementById('modalDetalhes').classList.remove('show');
+  const m = document.getElementById('modalDetalhes');
+  if (m) m.classList.remove('show');
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(); });
-document.getElementById('modalDetalhes').addEventListener('click', e => {
-  if (e.target === e.currentTarget) fecharModal();
+document.addEventListener('click', e => {
+  const m = document.getElementById('modalDetalhes');
+  if (m && e.target === m) fecharModal();
 });
 
 async function verDetalhes(execId) {
@@ -682,7 +660,7 @@ async function verDetalhes(execId) {
     sucesso: '<span class="detail-chip chip-sucesso">✓ Sucesso</span>',
     erro:    '<span class="detail-chip chip-erro">✗ Erro</span>',
     parcial: '<span class="detail-chip chip-parcial">◑ Parcial</span>'
-  }[item.status] || item.status;
+  }[item.status] || escHtml(item.status || '');
 
   const fmtData = v => v ? new Date(v).toLocaleString('pt-BR') : '—';
   const fmtMs   = v => v ? `${(v/1000).toFixed(1)}s` : '—';
