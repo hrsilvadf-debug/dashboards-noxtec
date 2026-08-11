@@ -102,6 +102,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Healthcheck (sempre 200, sem auth) ──
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "prints-dashboard"}
+
 # Servir frontend estático
 if FRONT_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONT_DIR)), name="static")
