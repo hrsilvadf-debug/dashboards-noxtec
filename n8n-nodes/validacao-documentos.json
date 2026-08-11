@@ -1,0 +1,43 @@
+{
+  "_comment": "Node para adicionar ao FINAL do workflow n8n Xbx1s6zFILf096gY",
+  "_comment2": "Envia dados da execução para o painel Validação Documentos",
+  "_comment3": "Continue On Fail = true (não trava o workflow se o painel cair)",
+  "nome": "Enviar para Painel - Validação Documentos",
+  "tipo": "n8n-nodes-base.httpRequest",
+  "parametros": {
+    "url": "https://dashboard.dashapi.com.br/api/paineis/validacao-documentos/webhook",
+    "method": "POST",
+    "sendHeaders": true,
+    "headerParameters": {
+      "parameters": [
+        {"name": "Content-Type",  "value": "application/json"},
+        {"name": "x-webhook-key", "value": "noxtec-paineis-2026-secret"}
+      ]
+    },
+    "sendBody": true,
+    "bodyParameters": {
+      "parameters": [
+        {"name": "execution_id",          "value": "={{ $execution.id }}"},
+        {"name": "workflow_id",           "value": "={{ $workflow.id }}"},
+        {"name": "workflow_nome",         "value": "={{ $workflow.name }}"},
+        {"name": "status",                "value": "={{ $execution.status === 'success' ? 'sucesso' : ($execution.status === 'error' ? 'erro' : 'parcial') }}"},
+        {"name": "iniciado_em",           "value": "={{ $execution.startedAt }}"},
+        {"name": "finalizado_em",         "value": "={{ $now.toISO() }}"},
+        {"name": "duracao_ms",            "value": "={{ $execution.duration }}"},
+        {"name": "total_documentos",      "value": "={{ $json.totalDocumentos || 0 }}"},
+        {"name": "documentos_aprovados",  "value": "={{ $json.documentosAprovados || 0 }}"},
+        {"name": "documentos_rejeitados", "value": "={{ $json.documentosRejeitados || 0 }}"},
+        {"name": "documentos_pendentes",  "value": "={{ $json.documentosPendentes || 0 }}"},
+        {"name": "nodes_executados",      "value": "={{ JSON.stringify($execution.executedNodes || []) }}"},
+        {"name": "erro_mensagem",         "value": "={{ $execution.lastNodeExecutedError ? $execution.lastNodeExecutedError?.message : null }}"},
+        {"name": "erro_node",             "value": "={{ $execution.lastNodeExecutedError ? $execution.lastNodeExecuted : null }}"},
+        {"name": "metadados",             "value": "={{ JSON.stringify({ executadoPor: $execution.userId, modo: $execution.mode, testMode: $execution.testRun }) }}"}
+      ]
+    },
+    "options": {
+      "timeout": 10000,
+      "retry": {"maxTries": 2}
+    }
+  },
+  "continue_on_fail": true
+}

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PRINTS — Painéis NoxTec</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        colors: {
+          navy: {
+            50:  '#f0f3f9',
+            100: '#d9e0ee',
+            200: '#b3c1dd',
+            500: '#1e2a47',
+            600: '#172238',
+            700: '#0f1a30',
+            800: '#0a1426',
+            900: '#060d1c',
+            950: '#03081a'
+          },
+          brand: {
+            50: '#eef2ff', 100: '#dde4ff', 500: '#6366f1', 600: '#4f46e5',
+            700: '#4338ca', 800: '#3730a3'
+          }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background:#f5f7fa; }
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .panel-card { transition: all 0.25s ease; }
+  .panel-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(15,26,48,0.25); }
+  .dot { width:6px; height:6px; border-radius:50%; display:inline-block; margin-right:8px; box-shadow: 0 0 8px currentColor; }
+  input:focus { outline:none; border-color:#4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
+  .fade-in { animation: fadeIn 0.4s ease both; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ═══════════════════════════════════════════
+     TELA DE LOGIN
+═══════════════════════════════════════════════ -->
+<div id="loginScreen" class="min-h-screen flex flex-col lg:flex-row">
+
+  <!-- Lado esquerdo — branding navy -->
+  <div class="lg:w-1/2 bg-navy-700 bg-grid text-white p-10 lg:p-16 flex flex-col justify-between relative overflow-hidden">
+    <!-- gradiente sutil -->
+    <div class="absolute inset-0 bg-gradient-to-br from-navy-600/50 via-transparent to-navy-900/80 pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-brand-600/10 blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10">
+      <!-- Logo -->
+      <div class="flex items-center gap-2 mb-12">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center font-black text-white text-lg">N</div>
+        <div>
+          <span class="font-extrabold text-xl tracking-tight">nxt</span><span class="font-extrabold text-xl tracking-tight text-brand-500">painel</span>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400 -mt-1">NoxTec Systems</p>
+        </div>
+      </div>
+
+      <!-- Headline -->
+      <div class="max-w-md">
+        <p class="text-xs font-bold uppercase tracking-[0.25em] text-brand-500 mb-4 fade-in">Painéis Administrativos</p>
+        <h1 class="text-5xl lg:text-6xl font-extrabold leading-[1.05] mb-6 fade-in" style="animation-delay:0.1s">
+          Painéis que <span class="text-brand-500">conectam.</span>
+        </h1>
+        <p class="text-slate-300 text-base leading-relaxed max-w-sm fade-in" style="animation-delay:0.2s">
+          Central de métricas e operações dos produtos NoxTec — visualize, controle e automatize tudo em um só lugar.
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer bullets -->
+    <div class="relative z-10 mt-12">
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-400">
+        <span class="flex items-center"><span class="dot bg-emerald-400 text-emerald-400"></span>API Oficial</span>
+        <span class="flex items-center"><span class="dot bg-emerald-400 text-emerald-400"></span>Métricas em tempo real</span>
+        <span class="flex items-center"><span class="dot bg-emerald-400 text-emerald-400"></span>Acesso seguro</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lado direito — card de login -->
+  <div class="lg:w-1/2 flex items-center justify-center p-6 lg:p-12 bg-slate-50">
+    <div class="w-full max-w-md fade-in">
+      <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-10">
+        <h2 class="text-2xl font-extrabold text-navy-700 mb-1">Entrar na plataforma</h2>
+        <p class="text-sm text-slate-500 mb-8">Central de Painéis NoxTec</p>
+
+        <form id="loginForm" class="space-y-5">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">Usuário</label>
+            <input id="loginEmail" type="email" placeholder="seu@email.com" required
+                   class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">Senha</label>
+            <input id="loginSenha" type="password" placeholder="••••••••" required
+                   class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm" />
+          </div>
+          <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
+            <input id="lembrar" type="checkbox" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" />
+            Lembrar acesso
+          </label>
+          <div id="loginError" class="hidden text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2"></div>
+          <button type="submit"
+                  class="w-full bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-brand-600/20 hover:shadow-xl hover:shadow-brand-600/30">
+            Entrar
+          </button>
+        </form>
+
+        <p class="text-xs text-slate-400 text-center mt-6">Acesso restrito — fale com o administrador</p>
+      </div>
+      <p class="text-center text-xs text-slate-400 mt-6">© 2026 NoxTec · dashboard.dashapi.com.br</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     HUB DE PAINÉIS (após login)
+═══════════════════════════════════════════════ -->
+<div id="hubScreen" class="hidden min-h-screen bg-slate-50">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center font-black text-white">N</div>
+        <div>
+          <h1 class="font-extrabold text-navy-700 text-sm leading-none">nxt<span class="text-brand-600">painel</span></h1>
+          <p class="text-[10px] uppercase tracking-widest text-slate-400 mt-0.5">Hub de Painéis</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="hidden sm:flex items-center gap-2 text-xs text-emerald-600 font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Online
+        </div>
+        <div class="flex items-center gap-2.5 pl-4 border-l border-slate-200">
+          <div id="userAvatar" class="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-sm font-bold"></div>
+          <div class="hidden sm:block">
+            <p id="userName" class="text-sm font-semibold text-navy-700 leading-tight"></p>
+            <p id="userEmail" class="text-xs text-slate-400 leading-tight"></p>
+          </div>
+          <button onclick="logout()" title="Sair" class="ml-2 p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="bg-navy-700 bg-grid text-white py-12 px-6 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-navy-600/40 via-transparent to-navy-900/80 pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto relative z-10">
+      <p class="text-xs font-bold uppercase tracking-[0.25em] text-brand-500 mb-2">Central de Operações</p>
+      <h2 class="text-3xl lg:text-4xl font-extrabold mb-2">Seus <span class="text-brand-500">painéis</span></h2>
+      <p class="text-slate-300 text-sm">Selecione um painel para acessar as métricas e operações.</p>
+    </div>
+  </div>
+
+  <!-- Grid de Painéis -->
+  <main class="max-w-7xl mx-auto px-6 py-10">
+    <div id="paineisGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- cards gerados dinamicamente -->
+    </div>
+
+    <div id="emptyState" class="hidden text-center py-16">
+      <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-2.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+      </div>
+      <p class="text-slate-600 font-semibold">Nenhum painel disponível</p>
+      <p class="text-slate-400 text-sm mt-1">Fale com o administrador para liberar acesso.</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 py-6 mt-12">
+    <div class="max-w-7xl mx-auto px-6 flex items-center justify-between flex-wrap gap-3">
+      <p class="text-xs text-slate-400">© 2026 NoxTec Sistemas · dashboard.dashapi.com.br</p>
+      <div class="flex items-center gap-4 text-xs text-slate-400">
+        <span class="flex items-center"><span class="dot bg-emerald-400 text-emerald-400"></span>API Oficial</span>
+        <span class="flex items-center"><span class="dot bg-emerald-400 text-emerald-400"></span>Tempo real</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PAINEL SELECIONADO (placeholder dinâmico)
+═══════════════════════════════════════════════ -->
+<div id="painelScreen" class="hidden min-h-screen bg-slate-50">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="showHub()" class="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition" title="Voltar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div id="painelIcon" class="w-9 h-9 rounded-xl bg-brand-100 flex items-center justify-center text-xl"></div>
+        <div>
+          <h1 id="painelNome" class="font-extrabold text-navy-700 text-sm leading-none"></h1>
+          <p class="text-[10px] uppercase tracking-widest text-slate-400 mt-0.5">Painel NoxTec</p>
+        </div>
+      </div>
+      <button onclick="logout()" class="text-sm text-slate-500 hover:text-slate-700">Sair</button>
+    </div>
+  </header>
+  <main id="painelContent" class="max-w-7xl mx-auto px-6 py-10">
+    <div class="bg-white rounded-2xl p-12 text-center">
+      <p class="text-slate-500">Carregando painel...</p>
+    </div>
+  </main>
+</div>
+
+<script>
+const API = 'http://localhost:8001';
+let token, userData;
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const senha = document.getElementById('loginSenha').value;
+  if (document.getElementById('lembrar').checked) {
+    localStorage.setItem('prints_remember', '1');
+  }
+  try {
+    const r = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha })
+    });
+    const d = await r.json();
+    if (!r.ok) { showLoginError(d.detail || 'Erro'); return; }
+    token = d.token;
+    userData = d;
+    if (localStorage.getItem('prints_remember')) {
+      localStorage.setItem('prints_token', token);
+      localStorage.setItem('prints_user', JSON.stringify(d));
+    }
+    showHub();
+  } catch (err) {
+    showLoginError('Não foi possível conectar ao servidor.');
+  }
+});
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function showHub() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('hubScreen').classList.remove('hidden');
+  document.getElementById('painelScreen').classList.add('hidden');
+  if (!userData) return;
+  document.getElementById('userName').textContent = userData.nome;
+  document.getElementById('userEmail').textContent = userData.email;
+  document.getElementById('userAvatar').textContent = userData.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  loadPaineis();
+}
+
+async function loadPaineis() {
+  try {
+    const paineis = await fetch(`${API}/api/paineis`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json());
+
+    const grid = document.getElementById('paineisGrid');
+    const empty = document.getElementById('emptyState');
+
+    // Filtrar apenas os que o usuário tem acesso
+    const slugs = userData.paineis.map(p => p.slug);
+    const disponiveis = paineis.filter(p => slugs.includes(p.slug));
+
+    if (!disponiveis.length) {
+      grid.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    grid.innerHTML = disponiveis.map((p, i) => `
+      <div class="panel-card bg-white rounded-2xl p-6 border border-slate-200 cursor-pointer fade-in"
+           style="animation-delay:${i*0.05}s"
+           onclick="abrirPainel('${p.slug}', '${p.nome.replace(/'/g, "\\'")}', '${p.icone || '📊'}', '${p.cor_primaria || '#4F46E5'}')">
+        <div class="flex items-start justify-between mb-5">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style="background:${(p.cor_primaria || '#4F46E5')}15">${p.icone || '📊'}</div>
+          <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <h3 class="font-bold text-navy-700 text-lg mb-1">${p.nome}</h3>
+        <p class="text-sm text-slate-500 mb-4">${p.descricao || ''}</p>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Disponível
+          </span>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function abrirPainel(slug, nome, icone, cor) {
+  // Redireciona direto para o dashboard específico do painel
+  if (slug === 'validacao-documentos') {
+    window.location.href = '/static/validacao-documentos.html';
+    return;
+  }
+  if (slug === 'disparador') {
+    alert('Dashboard do Disparador ainda em construção.');
+    return;
+  }
+  // fallback genérico
+  document.getElementById('hubScreen').classList.add('hidden');
+  document.getElementById('painelScreen').classList.remove('hidden');
+  document.getElementById('painelNome').textContent = nome;
+  document.getElementById('painelIcon').textContent = icone;
+  document.getElementById('painelContent').innerHTML = `
+    <div class="bg-white rounded-2xl p-12 text-center">
+      <div class="text-5xl mb-4">${icone}</div>
+      <h2 class="text-2xl font-bold text-navy-700 mb-2">${nome}</h2>
+      <p class="text-slate-500">Dashboard do painel <code class="px-2 py-0.5 bg-slate-100 rounded text-sm">${slug}</code> em construção.</p>
+    </div>
+  `;
+}
+
+function logout() {
+  fetch(`${API}/api/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(()=>{});
+  localStorage.removeItem('prints_token');
+  localStorage.removeItem('prints_user');
+  localStorage.removeItem('prints_remember');
+  token = null; userData = null;
+  document.getElementById('hubScreen').classList.add('hidden');
+  document.getElementById('painelScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+// Boot
+(function() {
+  const t = localStorage.getItem('prints_token');
+  const u = localStorage.getItem('prints_user');
+  if (t && u) {
+    token = t;
+    userData = JSON.parse(u);
+    showHub();
+  }
+})();
+</script>
+</body>
+</html>

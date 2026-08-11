@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  prints-dashboard:
+    build:
+      context: ./validacao-documentos
+      dockerfile: Dockerfile
+    container_name: prints-dashboard
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+      - HOST=0.0.0.0
+      - WEBHOOK_KEY=noxtec-paineis-2026-secret
+      - PYTHONUNBUFFERED=1
+      - PYTHONIOENCODING=utf-8
+    volumes:
+      - prints-data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/api/paineis').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  prints-data:

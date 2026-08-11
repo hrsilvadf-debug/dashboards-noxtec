@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Validação Documentos — Painel NoxTec</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        colors: {
+          navy: { 700:'#0f1a30', 800:'#0a1426', 900:'#060d1c', 950:'#03081a' },
+          brand: { 50:'#eef2ff', 100:'#dde4ff', 500:'#6366f1', 600:'#4f46e5', 700:'#4338ca', 800:'#3730a3' },
+          ink: { 50:'#f8fafc', 100:'#f1f5f9', 200:'#e2e8f0', 300:'#cbd5e1', 500:'#64748b', 700:'#334155', 900:'#0f172a' }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background:#f5f7fa; color:#0f172a; }
+  .bg-grid { background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size:40px 40px; }
+  .card { background:white; border:1px solid #e2e8f0; border-radius:16px; }
+  .stat-card { transition:all 0.2s; }
+  .stat-card:hover { transform:translateY(-2px); box-shadow:0 12px 24px -8px rgba(15,26,48,0.12); }
+  .badge { padding:3px 10px; border-radius:999px; font-size:11px; font-weight:600; display:inline-block; }
+  .badge-sucesso { background:#d1fae5; color:#065f46; }
+  .badge-erro    { background:#fee2e2; color:#991b1b; }
+  .badge-parcial { background:#fef3c7; color:#92400e; }
+  input, select { background:white; border:1px solid #cbd5e1; color:#0f172a; border-radius:10px; padding:8px 14px; outline:none; font-size:14px; }
+  input:focus, select:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,0.15); }
+  table { border-collapse:separate; border-spacing:0; }
+  thead th { background:#f8fafc; padding:12px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#64748b; font-weight:600; border-bottom:1px solid #e2e8f0; }
+  tbody tr { transition:background 0.1s; }
+  tbody tr:hover { background:#f8fafc; }
+  tbody td { padding:12px 16px; border-bottom:1px solid #f1f5f9; font-size:14px; }
+  .btn-primary { background:#4f46e5; color:white; transition:all 0.15s; font-weight:600; }
+  .btn-primary:hover { background:#4338ca; }
+  .btn-ghost { background:white; border:1px solid #e2e8f0; color:#475569; transition:all 0.15s; }
+  .btn-ghost:hover { background:#f8fafc; }
+  .fade-in { animation:fadeIn 0.4s ease both; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  .spinner { border:2px solid #e2e8f0; border-top-color:#4f46e5; border-radius:50%; width:24px; height:24px; animation:spin 0.7s linear infinite; display:inline-block; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Header -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <button onclick="window.location.href='/static/index.html'" class="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition" title="Voltar ao Hub">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-xl">📄</div>
+        <div>
+          <h1 class="font-extrabold text-ink-900 text-base leading-none">Validação Documentos</h1>
+          <p class="text-[11px] uppercase tracking-widest text-slate-500 mt-0.5">Painel NoxTec · dashboard.dashapi.com.br</p>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="atualizar()" class="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-1.5" title="Atualizar">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span class="hidden sm:inline">Atualizar</span>
+      </button>
+      <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
+        <div id="userAvatar" class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-xs font-bold"></div>
+        <span id="userName" class="text-sm font-semibold text-ink-900 hidden sm:block"></span>
+        <button onclick="logout()" class="ml-1 p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition" title="Sair">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Hero strip -->
+<div class="bg-navy-700 bg-grid text-white py-8 px-6 relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-navy-800/60 via-transparent to-navy-950/80 pointer-events-none"></div>
+  <div class="max-w-7xl mx-auto relative z-10 flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.25em] text-brand-500 mb-1">Workflow n8n Xbx1s6zFILf096gY</p>
+      <h2 class="text-2xl lg:text-3xl font-extrabold">Métricas de <span class="text-brand-500">Validação</span></h2>
+    </div>
+    <div class="flex items-center gap-2 text-xs text-emerald-400 font-medium">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      Recebendo dados em tempo real
+    </div>
+  </div>
+</div>
+
+<main class="max-w-7xl mx-auto px-6 py-8 space-y-6">
+
+  <!-- KPIs -->
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="card stat-card p-5 fade-in">
+      <div class="flex items-start justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
+          <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        </div>
+      </div>
+      <p class="text-xs font-medium text-slate-500 mb-1">Total de Execuções</p>
+      <p class="text-3xl font-extrabold text-ink-900" id="kpi-total">—</p>
+      <p class="text-xs text-slate-400 mt-1"><span id="kpi-hoje-exec">—</span> hoje · <span id="kpi-mes-exec">—</span> este mês</p>
+    </div>
+
+    <div class="card stat-card p-5 fade-in" style="animation-delay:0.05s">
+      <div class="flex items-start justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+          <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+      </div>
+      <p class="text-xs font-medium text-slate-500 mb-1">Documentos Aprovados</p>
+      <p class="text-3xl font-extrabold text-ink-900" id="kpi-aprovados">—</p>
+      <p class="text-xs text-emerald-600 font-semibold mt-1"><span id="kpi-taxa-aprov">—</span> de aprovação</p>
+    </div>
+
+    <div class="card stat-card p-5 fade-in" style="animation-delay:0.1s">
+      <div class="flex items-start justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
+          <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+      </div>
+      <p class="text-xs font-medium text-slate-500 mb-1">Documentos Rejeitados</p>
+      <p class="text-3xl font-extrabold text-ink-900" id="kpi-rejeitados">—</p>
+      <p class="text-xs text-rose-600 font-semibold mt-1"><span id="kpi-taxa-rejeit">—</span> rejeição</p>
+    </div>
+
+    <div class="card stat-card p-5 fade-in" style="animation-delay:0.15s">
+      <div class="flex items-start justify-between mb-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+          <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+      </div>
+      <p class="text-xs font-medium text-slate-500 mb-1">Tempo Médio</p>
+      <p class="text-3xl font-extrabold text-ink-900" id="kpi-tempo">—</p>
+      <p class="text-xs text-slate-400 mt-1">por execução</p>
+    </div>
+  </section>
+
+  <!-- Charts -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 card p-6 fade-in">
+      <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <h3 class="font-bold text-ink-900">Evolução de Processamentos</h3>
+        <select id="chartRange" onchange="loadCharts()" class="text-sm py-1.5">
+          <option value="7">Últimos 7 dias</option>
+          <option value="15">Últimos 15 dias</option>
+          <option value="30" selected>Últimos 30 dias</option>
+          <option value="90">Últimos 90 dias</option>
+        </select>
+      </div>
+      <div class="relative h-72"><canvas id="lineChart"></canvas></div>
+    </div>
+
+    <div class="card p-6 fade-in">
+      <h3 class="font-bold text-ink-900 mb-5">Status das Execuções</h3>
+      <div class="relative h-52 flex items-center justify-center">
+        <canvas id="donutChart"></canvas>
+      </div>
+      <div class="space-y-2.5 mt-5 pt-5 border-t border-slate-100">
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-slate-600 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>Sucesso</span>
+          <span class="font-bold text-ink-900" id="leg-sucesso">—</span>
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-slate-600 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>Erro</span>
+          <span class="font-bold text-ink-900" id="leg-erro">—</span>
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-slate-600 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>Parcial</span>
+          <span class="font-bold text-ink-900" id="leg-parcial">—</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabela de Execuções -->
+  <section class="card overflow-hidden fade-in">
+    <div class="p-5 border-b border-slate-200 flex items-center justify-between flex-wrap gap-3">
+      <h3 class="font-bold text-ink-900">Execuções do Workflow</h3>
+      <div class="flex items-center gap-2 flex-wrap">
+        <select id="filterStatus" onchange="loadExecucoes(1)" class="text-sm py-1.5">
+          <option value="">Todos status</option>
+          <option value="sucesso">Sucesso</option>
+          <option value="erro">Erro</option>
+          <option value="parcial">Parcial</option>
+        </select>
+        <input type="date" id="filterDe" onchange="loadExecucoes(1)" class="text-sm py-1.5" />
+        <input type="date" id="filterAte" onchange="loadExecucoes(1)" class="text-sm py-1.5" />
+        <button onclick="clearFilters()" class="btn-ghost px-3 py-1.5 rounded-lg text-sm">Limpar</button>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th>Execução</th>
+            <th>Status</th>
+            <th class="text-center">Docs</th>
+            <th class="text-center">Aprovados</th>
+            <th class="text-center">Rejeitados</th>
+            <th class="text-center">Duração</th>
+            <th>Data/Hora</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="execTableBody">
+          <tr><td colspan="8" class="text-center py-12"><div class="spinner mx-auto"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="p-4 border-t border-slate-200 flex items-center justify-between flex-wrap gap-3">
+      <p class="text-xs text-slate-500" id="paginInfo">—</p>
+      <div class="flex items-center gap-1" id="paginBtns"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const API = 'http://localhost:8001';
+let token, userData, paginaAtual = 1;
+let lineChart, donutChart;
+
+document.addEventListener('DOMContentLoaded', () => {
+  token = localStorage.getItem('prints_token');
+  const u = localStorage.getItem('prints_user');
+  if (!token || !u) { window.location.href = '/static/index.html'; return; }
+  userData = JSON.parse(u);
+  document.getElementById('userName').textContent = userData.nome;
+  document.getElementById('userAvatar').textContent = userData.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  atualizar();
+  // Auto-refresh a cada 30s
+  setInterval(atualizar, 30000);
+});
+
+async function api(url) {
+  const r = await fetch(`${API}${url}`, { headers: { Authorization: `Bearer ${token}` }});
+  if (r.status === 401) { logout(); return; }
+  return r.json();
+}
+
+function logout() {
+  localStorage.removeItem('prints_token');
+  localStorage.removeItem('prints_user');
+  window.location.href = '/static/index.html';
+}
+
+function atualizar() {
+  loadResumo();
+  loadCharts();
+  loadExecucoes(paginaAtual || 1);
+}
+
+async function loadResumo() {
+  try {
+    const d = await api('/api/dashboard/resumo');
+    document.getElementById('kpi-total').textContent     = (d.geral.total_execucoes||0).toLocaleString('pt-BR');
+    document.getElementById('kpi-aprovados').textContent  = (d.geral.total_aprovados||0).toLocaleString('pt-BR');
+    document.getElementById('kpi-rejeitados').textContent = (d.geral.total_rejeitados||0).toLocaleString('pt-BR');
+    document.getElementById('kpi-hoje-exec').textContent = d.hoje.execucoes || 0;
+    document.getElementById('kpi-mes-exec').textContent  = d.mes.execucoes || 0;
+    const taxaAprov = d.geral.total_documentos > 0
+      ? ((d.geral.total_aprovados / d.geral.total_documentos) * 100).toFixed(1) + '%'
+      : '—';
+    const taxaRejeit = d.geral.total_documentos > 0
+      ? ((d.geral.total_rejeitados / d.geral.total_documentos) * 100).toFixed(1) + '%'
+      : '—';
+    document.getElementById('kpi-taxa-aprov').textContent = taxaAprov;
+    document.getElementById('kpi-taxa-rejeit').textContent = taxaRejeit;
+    const ms = d.geral.tempo_medio_ms || 0;
+    let tempoStr;
+    if (ms < 1000) tempoStr = ms + 'ms';
+    else if (ms < 60000) tempoStr = (ms/1000).toFixed(1) + 's';
+    else tempoStr = Math.floor(ms/60000) + 'min ' + Math.floor((ms%60000)/1000) + 's';
+    document.getElementById('kpi-tempo').textContent = tempoStr;
+  } catch(e) { console.error(e); }
+}
+
+async function loadCharts() {
+  const dias = parseInt(document.getElementById('chartRange').value);
+  try {
+    const [evolucao, status] = await Promise.all([
+      api(`/api/dashboard/evolucao?dias=${dias}`),
+      api('/api/dashboard/status')
+    ]);
+
+    const ctx = document.getElementById('lineChart').getContext('2d');
+    if (lineChart) lineChart.destroy();
+    lineChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: evolucao.map(r => new Date(r.data).toLocaleDateString('pt-BR', {day:'2-digit',month:'short'})),
+        datasets: [
+          {
+            label: 'Documentos Processados',
+            data: evolucao.map(r => r.total_documentos || 0),
+            borderColor:'#4f46e5', backgroundColor:'rgba(79,70,229,0.08)',
+            fill:true, tension:0.4, pointRadius:3, pointHoverRadius:5, borderWidth:2.5
+          },
+          {
+            label: 'Aprovados',
+            data: evolucao.map(r => r.docs_aprovados || 0),
+            borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.06)',
+            fill:true, tension:0.4, pointRadius:3, pointHoverRadius:5, borderWidth:2.5
+          },
+          {
+            label: 'Rejeitados',
+            data: evolucao.map(r => r.docs_rejeitados || 0),
+            borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.06)',
+            fill:true, tension:0.4, pointRadius:3, pointHoverRadius:5, borderWidth:2.5
+          }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'index', intersect:false },
+        plugins: { legend: { labels: { color:'#475569', font:{size:12, weight:'500'}, boxWidth:12, padding:14 } } },
+        scales: {
+          x: { grid:{display:false}, ticks:{color:'#64748b', font:{size:11}} },
+          y: { grid:{color:'#f1f5f9'}, ticks:{color:'#64748b', font:{size:11}}, beginAtZero:true }
+        }
+      }
+    });
+
+    const sMap = Object.fromEntries((status||[]).map(s => [s.status, s.quantidade]));
+    const dCtx = document.getElementById('donutChart').getContext('2d');
+    if (donutChart) donutChart.destroy();
+    donutChart = new Chart(dCtx, {
+      type: 'doughnut',
+      data: {
+        labels:['Sucesso','Erro','Parcial'],
+        datasets: [{
+          data: [sMap.sucesso||0, sMap.erro||0, sMap.parcial||0],
+          backgroundColor: ['#10b981','#ef4444','#f59e0b'],
+          borderWidth:3, borderColor:'#fff', hoverOffset:8
+        }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{ legend:{display:false} } }
+    });
+    document.getElementById('leg-sucesso').textContent = sMap.sucesso||0;
+    document.getElementById('leg-erro').textContent    = sMap.erro||0;
+    document.getElementById('leg-parcial').textContent = sMap.parcial||0;
+  } catch(e) { console.error(e); }
+}
+
+async function loadExecucoes(pagina=1) {
+  paginaAtual = pagina;
+  const status = document.getElementById('filterStatus').value;
+  const dataDe  = document.getElementById('filterDe').value;
+  const dataAte = document.getElementById('filterAte').value;
+  let url = `/api/dashboard/execucoes?pagina=${pagina}&por_pagina=15`;
+  if (status)  url += `&status=${status}`;
+  if (dataDe)  url += `&data_de=${dataDe}`;
+  if (dataAte) url += `&data_ate=${dataAte}`;
+  try {
+    const d = await api(url);
+    const tbody = document.getElementById('execTableBody');
+    if (!d.items.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-12 text-slate-400">Nenhuma execução encontrada</td></tr>';
+    } else {
+      tbody.innerHTML = d.items.map(item => {
+        const cls = item.status === 'sucesso' ? 'badge-sucesso' : item.status === 'erro' ? 'badge-erro' : 'badge-parcial';
+        const lbl = item.status === 'sucesso' ? 'Sucesso' : item.status === 'erro' ? 'Erro' : 'Parcial';
+        const data = item.finalizado_em ? new Date(item.finalizado_em).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+        const ms = item.duracao_ms || 0;
+        let tempo;
+        if (ms < 1000) tempo = ms + 'ms';
+        else if (ms < 60000) tempo = (ms/1000).toFixed(1) + 's';
+        else tempo = Math.floor(ms/60000) + 'm ' + Math.floor((ms%60000)/1000) + 's';
+        return `<tr>
+          <td class="font-mono text-xs text-brand-600">${item.execution_id.slice(0,14)}…</td>
+          <td><span class="badge ${cls}">${lbl}</span></td>
+          <td class="text-center font-medium">${item.total_documentos ?? 0}</td>
+          <td class="text-center text-emerald-600 font-semibold">${item.documentos_aprovados ?? 0}</td>
+          <td class="text-center text-rose-600 font-semibold">${item.documentos_rejeitados ?? 0}</td>
+          <td class="text-center text-slate-500 text-xs">${tempo}</td>
+          <td class="text-slate-500 text-xs">${data}</td>
+          <td class="text-right">
+            <button onclick="verDetalhes('${item.execution_id}')" class="text-brand-600 hover:text-brand-700 text-xs font-semibold">Ver</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+    document.getElementById('paginInfo').textContent = `Mostrando ${((pagina-1)*15)+1}–${Math.min(pagina*15, d.total)} de ${d.total} execuções`;
+    const totalPag = Math.ceil(d.total / 15);
+    const btns = document.getElementById('paginBtns');
+    btns.innerHTML = '';
+    if (totalPag > 1) {
+      if (pagina > 1) btns.innerHTML += `<button class="btn-ghost px-3 py-1.5 rounded-lg text-xs" onclick="loadExecucoes(${pagina-1})">‹ Anterior</button>`;
+      btns.innerHTML += `<span class="text-slate-500 text-xs px-3 py-1.5">${pagina} / ${totalPag}</span>`;
+      if (pagina < totalPag) btns.innerHTML += `<button class="btn-ghost px-3 py-1.5 rounded-lg text-xs" onclick="loadExecucoes(${pagina+1})">Próxima ›</button>`;
+    }
+  } catch(e) { console.error(e); }
+}
+
+function clearFilters() {
+  document.getElementById('filterStatus').value = '';
+  document.getElementById('filterDe').value = '';
+  document.getElementById('filterAte').value = '';
+  loadExecucoes(1);
+}
+
+async function verDetalhes(execId) {
+  const d = await api(`/api/dashboard/execucoes?pagina=1&por_pagina=100`);
+  const item = d.items.find(i => i.execution_id === execId);
+  if (!item) return;
+  const nodes = item.nodes_executados || [];
+  const nodesStr = Array.isArray(nodes)
+    ? nodes.map(n => typeof n === 'string' ? n : (n.nome || n.name || JSON.stringify(n))).join(' → ')
+    : '—';
+  alert(
+    `Execução: ${item.execution_id}\n` +
+    `Status: ${item.status}\n` +
+    `Documentos: ${item.total_documentos}\n` +
+    `Aprovados: ${item.documentos_aprovados}\n` +
+    `Rejeitados: ${item.documentos_rejeitados}\n` +
+    `Duração: ${item.duracao_ms}ms\n` +
+    `Iniciado: ${item.iniciado_em}\n` +
+    `Finalizado: ${item.finalizado_em}\n` +
+    `Nodes: ${nodesStr}\n` +
+    (item.erro_mensagem ? `Erro: ${item.erro_mensagem}\nNode erro: ${item.erro_node}` : '')
+  );
+}
+</script>
+</body>
+</html>
