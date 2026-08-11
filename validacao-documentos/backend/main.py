@@ -56,6 +56,11 @@ def get_db():
 def init_db():
     conn = get_db()
     conn.executescript((BASE_DIR / "schema.sql").read_text(encoding="utf-8"))
+    # Migration: adicionar coluna erro_tipo se não existir (banco antigo)
+    try:
+        conn.execute("ALTER TABLE wd_execucoes ADD COLUMN erro_tipo TEXT")
+    except:
+        pass
     conn.commit()
     conn.close()
 
@@ -91,6 +96,7 @@ class WebhookPayload(BaseModel):
     workflow_id:              Optional[str] = None
     workflow_nome:            Optional[str] = None
     status:                   str
+    erro_tipo:               Optional[str] = None  # erro_credito_openai | erro_credito_gemini | ...
     iniciado_em:              Optional[str] = None
     finalizado_em:            Optional[str] = None
     duracao_ms:               Optional[int] = None
@@ -103,6 +109,16 @@ class WebhookPayload(BaseModel):
     erro_node:                Optional[str] = None
     nodes_executados:         Optional[List[dict]] = []
     dados_originais:          Optional[dict] = {}
+
+class LLMStatusPayload(BaseModel):
+    provider:       str   # openai | gemini | perplexity | anthropic
+    provider_nome:  str
+    status:         str   # ok | aviso | critico | offline
+    saldo_usd:      Optional[float] = None
+    saldo_brl:      Optional[float] = None
+    quota_usada_pct: Optional[float] = None
+    limite_total:   Optional[float] = None
+    erro_mensagem:  Optional[str] = None
 
 # ============================================================
 # APP
@@ -208,15 +224,16 @@ def webhook(payload: WebhookPayload, x_webhook_key: str = Header(None)):
     try:
         conn.execute("""
             INSERT OR REPLACE INTO wd_execucoes (
-                execution_id, workflow_id, workflow_nome, status,
+                execution_id, workflow_id, workflow_nome, status, erro_tipo,
                 iniciado_em, finalizado_em, duracao_ms,
                 total_documentos, documentos_aprovados, documentos_rejeitados,
                 documentos_pendentes, metadados, erro_mensagem, erro_node,
                 nodes_executados, dados_originais
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             payload.execution_id, payload.workflow_id, payload.workflow_nome,
-            payload.status, payload.iniciado_em, payload.finalizado_em,
+            payload.status, payload.erro_tipo,
+            payload.iniciado_em, payload.finalizado_em,
             payload.duracao_ms, payload.total_documentos,
             payload.documentos_aprovados, payload.documentos_rejeitados,
             payload.documentos_pendentes, json.dumps(payload.metadados or {}),
@@ -224,6 +241,18 @@ def webhook(payload: WebhookPayload, x_webhook_key: str = Header(None)):
             json.dumps(payload.nodes_executados or []),
             json.dumps(payload.dados_originais or {}),
         ))
+
+        # Se houve erro, registrar alerta
+        if payload.status == "erro" and payload.erro_mensagem:
+            conn.execute("""
+                INSERT INTO wd_alertas (execution_id, erro_tipo, erro_mensagem, erro_node)
+                VALUES (?, ?, ?, ?)
+            """, (
+                payload.execution_id,
+                payload.erro_tipo or "erro_desconhecido",
+                payload.erro_mensagem,
+                payload.erro_node
+            ))
 
         if payload.finalizado_em:
             data = payload.finalizado_em[:10]
@@ -344,6 +373,80 @@ def status_dist(user: dict = Depends(verify_token)):
     """).fetchall()
     conn.close()
     return [row_to_dict(r) for r in rows]
+
+# ============================================================
+# LLM STATUS — OpenAI, Gemini, etc.
+# ============================================================
+@app.post("/api/paineis/validacao-documentos/llm-status")
+def llm_status_webhook(payload: LLMStatusPayload, x_webhook_key: str = Header(None)):
+    """Recebe status de um provedor LLM (n8n envia periodicamente)"""
+    if x_webhook_key != WEBHOOK_KEY:
+        return JSONResponse(status_code=403, content={"erro": "Chave inválida"})
+
+    conn = get_db()
+    try:
+        conn.execute("""
+            INSERT INTO llm_status (provider, provider_nome, status, saldo_usd, saldo_brl,
+                                    quota_usada_pct, limite_total, erro_mensagem, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(provider) DO UPDATE SET
+                provider_nome   = excluded.provider_nome,
+                status          = excluded.status,
+                saldo_usd       = excluded.saldo_usd,
+                saldo_brl       = excluded.saldo_brl,
+                quota_usada_pct = excluded.quota_usada_pct,
+                limite_total    = excluded.limite_total,
+                erro_mensagem   = excluded.erro_mensagem,
+                ultimo_check    = CURRENT_TIMESTAMP,
+                updated_at      = CURRENT_TIMESTAMP
+        """, (
+            payload.provider, payload.provider_nome, payload.status,
+            payload.saldo_usd, payload.saldo_brl,
+            payload.quota_usada_pct, payload.limite_total, payload.erro_mensagem
+        ))
+        conn.commit()
+        return {"ok": True, "provider": payload.provider}
+    except Exception as e:
+        conn.rollback()
+        return JSONResponse(status_code=500, content={"erro": str(e)})
+    finally:
+        conn.close()
+
+@app.get("/api/dashboard/llm-status")
+def get_llm_status(user: dict = Depends(verify_token)):
+    """Retorna status de todos os provedores LLM monitorados"""
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM llm_status ORDER BY provider").fetchall()
+    conn.close()
+    return [row_to_dict(r) for r in rows]
+
+# ============================================================
+# ALERTAS — erros não resolvidos
+# ============================================================
+@app.get("/api/dashboard/alertas")
+def get_alertas(user: dict = Depends(verify_token)):
+    """Retorna alertas não acknowledged (últimos 30 dias)"""
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT * FROM wd_alertas
+        WHERE acknowledged = 0
+          AND created_at >= datetime('now', '-30 days')
+        ORDER BY created_at DESC
+    """).fetchall()
+    conn.close()
+    return [row_to_dict(r) for r in rows]
+
+@app.post("/api/dashboard/alertas/{execution_id}/ack")
+def ack_alerta(execution_id: str, user: dict = Depends(verify_token)):
+    """Marca alerta como visto"""
+    conn = get_db()
+    conn.execute("""
+        UPDATE wd_alertas SET acknowledged = 1, acknowledged_at = CURRENT_TIMESTAMP
+        WHERE execution_id = ?
+    """, (execution_id,))
+    conn.commit()
+    conn.close()
+    return {"ok": True}
 
 # ============================================================
 # INIT + USUÁRIO ADMIN PADRÃO

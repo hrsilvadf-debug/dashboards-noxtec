@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS wd_execucoes (
     workflow_id            TEXT,
     workflow_nome          TEXT,
     status                 TEXT NOT NULL,
+    erro_tipo              TEXT,                  -- erro_credito_openai | erro_credito_gemini | erro_timeout | erro_rede | erro_formato | erro_desconhecido
     iniciado_em            DATETIME,
     finalizado_em          DATETIME,
     duracao_ms             INTEGER,
@@ -93,6 +94,38 @@ CREATE TABLE IF NOT EXISTS wd_logs (
 );
 
 -- ============================================================
+-- STATUS LLM — OpenAI, Gemini, etc.
+-- Atualizado pelo n8n via webhook a cada ciclo
+-- ============================================================
+CREATE TABLE IF NOT EXISTS llm_status (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    provider        TEXT UNIQUE NOT NULL,   -- openai | gemini | perplexity | anthropic
+    provider_nome   TEXT NOT NULL,          -- "OpenAI" | "Google Gemini" | etc
+    status          TEXT DEFAULT 'unknown', -- ok | aviso | critico | offline | unknown
+    saldo_usd       REAL,
+    saldo_brl       REAL,
+    quota_usada_pct REAL,                  -- percentual de quota usada (0-100)
+    limite_total    REAL,
+    erro_mensagem   TEXT,
+    ultimo_check     DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================
+-- ALERTAS — execuções com erro não resolvido
+-- ============================================================
+CREATE TABLE IF NOT EXISTS wd_alertas (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    execution_id    TEXT,
+    erro_tipo       TEXT,
+    erro_mensagem   TEXT,
+    erro_node       TEXT,
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    acknowledged    INTEGER DEFAULT 0,
+    acknowledged_at DATETIME
+);
+
+-- ============================================================
 -- ÍNDICES
 -- ============================================================
 CREATE INDEX IF NOT EXISTS idx_execucoes_status ON wd_execucoes(status);
@@ -101,6 +134,8 @@ CREATE INDEX IF NOT EXISTS idx_metricas_data    ON wd_metricas_dia(data);
 CREATE INDEX IF NOT EXISTS idx_logs_execution   ON wd_logs(execution_id);
 CREATE INDEX IF NOT EXISTS idx_permissoes_user  ON painel_permissoes(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_permissoes_painel ON painel_permissoes(painel_id);
+CREATE INDEX IF NOT EXISTS idx_alertas_ack      ON wd_alertas(acknowledged);
+CREATE INDEX IF NOT EXISTS idx_alertas_created  ON wd_alertas(created_at);
 
 -- ============================================================
 -- SEED — Painéis iniciais da NoxTec

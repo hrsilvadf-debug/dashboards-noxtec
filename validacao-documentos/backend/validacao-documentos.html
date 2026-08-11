@@ -161,6 +161,20 @@
   </div>
 </header>
 
+<!-- Banner de Alerta Crítico -->
+<div id="alertBanner" style="display:none" class="bg-amber-50 border-b-2 border-amber-300 px-6 py-3">
+  <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <span class="text-xl">⚠️</span>
+      <div>
+        <p class="font-bold text-amber-800 text-sm" id="alertTitle">Erro detectado</p>
+        <p id="alertMsg" class="text-amber-700 text-xs"></p>
+      </div>
+    </div>
+    <button onclick="acknowledgeAlert()" class="text-xs bg-amber-200 text-amber-800 px-3 py-1.5 rounded-lg font-semibold hover:bg-amber-300 transition cursor-pointer border-0">✓ Marcar como visto</button>
+  </div>
+</div>
+
 <!-- Hero strip -->
 <div class="bg-navy-700 bg-grid text-white py-8 px-6 relative overflow-hidden">
   <div class="absolute inset-0 bg-gradient-to-br from-navy-800/60 via-transparent to-navy-950/80 pointer-events-none"></div>
@@ -223,6 +237,17 @@
       <p class="text-3xl font-extrabold text-ink-900" id="kpi-tempo">—</p>
       <p class="text-xs text-slate-400 mt-1">por execução</p>
     </div>
+  </section>
+
+  <!-- LLM Status — Provedores -->
+  <section id="llmSection" class="card p-5 fade-in" style="display:none">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-ink-900 flex items-center gap-2">
+        <span>🤖</span> Status dos LLMs
+      </h3>
+      <span id="llmLastCheck" class="text-xs text-slate-400"></span>
+    </div>
+    <div id="llmCards" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
   </section>
 
   <!-- Charts -->
@@ -359,10 +384,92 @@ function logout() {
   window.location.href = '/static/index.html';
 }
 
+// ── LLM Status ──
+async function loadLLMStatus() {
+  try {
+    const providers = await api('/api/dashboard/llm-status');
+    const section = document.getElementById('llmSection');
+    const container = document.getElementById('llmCards');
+    if (!providers || providers.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    container.innerHTML = providers.map(p => {
+      const statusLabel = { ok:'Operacional', aviso:'Atenção', critico:'Crítico', offline:'Offline', unknown:'Desconhecido' }[p.status] || p.status;
+      const dotColors = { ok:'bg-emerald-500', aviso:'bg-amber-500', critico:'bg-rose-500 animate-pulse', offline:'bg-slate-400', unknown:'bg-slate-400' };
+      const borderColors = { ok:'border-emerald-200', aviso:'border-amber-200', critico:'border-rose-200', offline:'border-slate-200', unknown:'border-slate-200' };
+      let saldoHtml = '';
+      if (p.saldo_brl !== null) saldoHtml = `<p class="text-xs font-semibold text-slate-600 mt-1">${p.saldo_brl.toFixed(2)} <span class="font-normal text-slate-400">BRL</span></p>`;
+      else if (p.saldo_usd !== null) saldoHtml = `<p class="text-xs font-semibold text-slate-600 mt-1">$${p.saldo_usd.toFixed(4)} <span class="font-normal text-slate-400">USD</span></p>`;
+      let quotaHtml = '';
+      if (p.quota_usada_pct !== null) {
+        const pct = p.quota_usada_pct;
+        const barColor = pct >= 90 ? 'bg-rose-500' : pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500';
+        quotaHtml = `<div class="mt-2"><div class="flex justify-between text-xs text-slate-500 mb-0.5"><span>Quota</span><span>${pct.toFixed(0)}%</span></div><div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full ${barColor} rounded-full transition-all" style="width:${Math.min(pct,100)}%"></div></div></div>`;
+      }
+      const lastCheck = p.ultimo_check ? new Date(p.ultimo_check).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+      const badgeClass = p.status === 'ok' ? 'bg-emerald-100 text-emerald-700' : p.status === 'aviso' ? 'bg-amber-100 text-amber-700' : p.status === 'critico' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600';
+      return `<div class="border ${borderColors[p.status] || 'border-slate-200'} rounded-xl p-4 bg-white">
+        <div class="flex items-center gap-2 mb-2"><span class="w-2.5 h-2.5 rounded-full ${dotColors[p.status] || 'bg-slate-400'}"></span><span class="font-bold text-sm text-ink-900">${escHtml(p.provider_nome || p.provider)}</span></div>
+        <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${badgeClass}">${statusLabel}</span>
+        ${saldoHtml}${quotaHtml}
+        ${p.erro_mensagem ? `<p class="text-xs text-rose-600 mt-2">${escHtml(p.erro_mensagem).slice(0,80)}</p>` : ''}
+        <p class="text-xs text-slate-300 mt-2">${lastCheck}</p>
+      </div>`;
+    }).join('');
+    document.getElementById('llmLastCheck').textContent = providers[0]?.ultimo_check ? `Verificacao: ${new Date(providers[0].ultimo_check).toLocaleString('pt-BR')}` : '';
+  } catch(e) { console.error('LLM status error:', e); }
+}
+
+// ── Alertas ──
+let activeAlert = null;
+
+async function loadAlertas() {
+  try {
+    const alertas = await api('/api/dashboard/alertas');
+    const banner = document.getElementById('alertBanner');
+    if (!alertas || alertas.length === 0) { banner.style.display = 'none'; activeAlert = null; return; }
+    const a = alertas[0];
+    activeAlert = a;
+    const tipoLabel = {
+      erro_credito_openai: 'Credito OpenAI esgotado',
+      erro_credito_gemini: 'Credito Gemini esgotado',
+      erro_timeout: 'Timeout de API',
+      erro_rede: 'Erro de rede',
+      erro_formato: 'Formato invalido',
+      erro_desconhecido: 'Erro desconhecido',
+    }[a.erro_tipo] || 'Erro detectado';
+    document.getElementById('alertTitle').textContent = tipoLabel;
+    document.getElementById('alertMsg').innerHTML = escHtml(a.erro_mensagem || 'Sem detalhes').slice(0,120) + ' <span class="opacity-60">· ' + timeAgo(a.created_at) + '</span>';
+    banner.style.display = 'flex';
+  } catch(e) { console.error('Alertas error:', e); }
+}
+
+function timeAgo(dtStr) {
+  const diff = Date.now() - new Date(dtStr + 'Z').getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'agora';
+  if (mins < 60) return mins + 'min atras';
+  const horas = Math.floor(mins / 60);
+  if (horas < 24) return horas + 'h atras';
+  return Math.floor(horas / 24) + 'd atras';
+}
+
+async function acknowledgeAlert() {
+  if (!activeAlert) return;
+  try {
+    await fetch(API + '/api/dashboard/alertas/' + activeAlert.execution_id + '/ack', { method: 'POST', headers: { Authorization: 'Bearer ' + token }});
+    document.getElementById('alertBanner').style.display = 'none';
+    activeAlert = null;
+    loadAlertas();
+  } catch(e) { console.error(e); }
+}
+
+// ── Atualizar ──
 function atualizar() {
   loadResumo();
   loadCharts();
   loadExecucoes(paginaAtual || 1);
+  loadLLMStatus();
+  loadAlertas();
 }
 
 async function loadResumo() {
