@@ -49,6 +49,82 @@
   ::-webkit-scrollbar { width:6px; height:6px; }
   ::-webkit-scrollbar-track { background:transparent; }
   ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
+  /* ── Filtros modernos ── */
+  .filter-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .filter-chip {
+    padding:6px 14px; border-radius:999px; font-size:12px; font-weight:600;
+    cursor:pointer; border:1.5px solid #e2e8f0; background:white; color:#475569;
+    transition:all 0.15s; white-space:nowrap;
+  }
+  .filter-chip:hover { border-color:#4f46e5; color:#4f46e5; }
+  .filter-chip.active { background:#4f46e5; border-color:#4f46e5; color:white; }
+  .filter-divider { width:1px; height:24px; background:#e2e8f0; margin:0 4px; }
+  .date-input-wrap { position:relative; display:flex; align-items:center; gap:6px; }
+  .date-input-wrap label { font-size:11px; color:#64748b; font-weight:600; white-space:nowrap; }
+  .date-input-wrap input[type="date"] {
+    padding:6px 10px; border-radius:10px; font-size:12px; height:32px;
+    border:1.5px solid #e2e8f0; background:white; color:#0f172a;
+  }
+  .date-input-wrap input[type="date"]:focus {
+    border-color:#4f46e5; outline:none; box-shadow:0 0 0 3px rgba(79,70,229,0.12);
+  }
+  .status-select { padding:6px 12px; border-radius:10px; font-size:12px; height:32px; border:1.5px solid #e2e8f0; background:white; color:#0f172a; }
+  .status-select:focus { border-color:#4f46e5; outline:none; box-shadow:0 0 0 3px rgba(79,70,229,0.12); }
+  .active-filters { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .filter-tag { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:600; background:#eef2ff; color:#4f46e5; }
+  .filter-tag button { background:none; border:none; cursor:pointer; color:#4f46e5; font-size:13px; line-height:1; padding:0; }
+  .results-info { font-size:12px; color:#64748b; margin-left:auto; }
+  .results-info strong { color:#0f172a; font-weight:700; }
+</style>
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(15,26,48,0.55);
+    backdrop-filter:blur(4px); z-index:1000;
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; opacity:0; pointer-events:none;
+    transition:opacity 0.25s ease;
+  }
+  .modal-overlay.show { opacity:1; pointer-events:all; }
+  .modal-box {
+    background:white; border-radius:20px; width:100%; max-width:620px;
+    box-shadow:0 32px 64px rgba(15,26,48,0.25), 0 0 0 1px rgba(0,0,0,0.06);
+    transform:translateY(20px) scale(0.97); transition:transform 0.25s ease;
+    overflow:hidden;
+  }
+  .modal-overlay.show .modal-box { transform:translateY(0) scale(1); }
+  .modal-header {
+    padding:24px 28px 20px; border-bottom:1px solid #f1f5f9;
+    display:flex; align-items:center; justify-content:space-between;
+    background:linear-gradient(135deg, #0f1a30 0%, #1e3a6e 100%);
+    color:white;
+  }
+  .modal-header h2 { font-size:16px; font-weight:700; }
+  .modal-header span { font-size:11px; opacity:0.7; font-weight:400; }
+  .modal-close {
+    width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.15);
+    border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    color:white; font-size:18px; transition:background 0.15s; flex-shrink:0;
+  }
+  .modal-close:hover { background:rgba(255,255,255,0.3); }
+  .modal-body { padding:24px 28px; max-height:70vh; overflow-y:auto; }
+  .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .detail-item { background:#f8fafc; border-radius:12px; padding:14px 16px; }
+  .detail-label { font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; font-weight:600; margin-bottom:4px; }
+  .detail-value { font-size:15px; font-weight:700; color:#0f172a; }
+  .detail-value.sm { font-size:13px; font-weight:500; word-break:break-all; }
+  .detail-full { grid-column:1/-1; }
+  .detail-chip { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:8px; font-size:12px; font-weight:600; }
+  .chip-sucesso { background:#d1fae5; color:#065f46; }
+  .chip-erro { background:#fee2e2; color:#991b1b; }
+  .chip-parcial { background:#fef3c7; color:#92400e; }
+  .nodes-list { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+  .node-tag { background:#eef2ff; color:#4338ca; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:500; }
+  .erro-box { background:#fff5f5; border:1px solid #fecaca; border-radius:12px; padding:14px 16px; }
+  .erro-title { font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:#ef4444; font-weight:700; margin-bottom:6px; }
+  .erro-msg { font-size:13px; color:#991b1b; word-break:break-word; }
+  .modal-footer { padding:16px 28px; border-top:1px solid #f1f5f9; display:flex; justify-content:flex-end; }
+  .btn-modal { padding:9px 20px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all 0.15s; }
+  .btn-modal-ok { background:#4f46e5; color:white; }
+  .btn-modal-ok:hover { background:#4338ca; }
 </style>
 </head>
 <body class="min-h-screen">
@@ -187,19 +263,44 @@
 
   <!-- Tabela de Execuções -->
   <section class="card overflow-hidden fade-in">
-    <div class="p-5 border-b border-slate-200 flex items-center justify-between flex-wrap gap-3">
-      <h3 class="font-bold text-ink-900">Execuções do Workflow</h3>
-      <div class="flex items-center gap-2 flex-wrap">
-        <select id="filterStatus" onchange="loadExecucoes(1)" class="text-sm py-1.5">
-          <option value="">Todos status</option>
-          <option value="sucesso">Sucesso</option>
-          <option value="erro">Erro</option>
-          <option value="parcial">Parcial</option>
-        </select>
-        <input type="date" id="filterDe" onchange="loadExecucoes(1)" class="text-sm py-1.5" />
-        <input type="date" id="filterAte" onchange="loadExecucoes(1)" class="text-sm py-1.5" />
-        <button onclick="clearFilters()" class="btn-ghost px-3 py-1.5 rounded-lg text-sm">Limpar</button>
+    <div class="p-5 border-b border-slate-100">
+      <!-- Título + resumo -->
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-ink-900">Execuções do Workflow</h3>
+        <div id="resultsInfo" class="results-info"></div>
       </div>
+
+      <!-- Chips de período rápido -->
+      <div class="filter-bar">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide mr-1">Período</span>
+        <button class="filter-chip" onclick="setPeriod('hoje')" id="chip-hoje">Hoje</button>
+        <button class="filter-chip" onclick="setPeriod('7d')" id="chip-7d">7 dias</button>
+        <button class="filter-chip active" onclick="setPeriod('30d')" id="chip-30d">30 dias</button>
+        <button class="filter-chip" onclick="setPeriod('mes')" id="chip-mes">Este mês</button>
+        <button class="filter-chip" onclick="setPeriod('custom')" id="chip-custom">Personalizado</button>
+
+        <div class="filter-divider"></div>
+
+        <select id="filterStatus" onchange="applyFilters()" class="status-select">
+          <option value="">Todos status</option>
+          <option value="sucesso">✓ Sucesso</option>
+          <option value="erro">✗ Erro</option>
+          <option value="parcial">◑ Parcial</option>
+        </select>
+
+        <!-- Campo de data que aparece só no modo custom -->
+        <div id="dateRangeCustom" class="date-input-wrap" style="display:none">
+          <label>De</label>
+          <input type="date" id="filterDe" onchange="applyFilters()" />
+          <label>Até</label>
+          <input type="date" id="filterAte" onchange="applyFilters()" />
+        </div>
+
+        <button onclick="clearFilters()" class="btn-ghost px-3 py-1.5 rounded-lg text-sm" style="height:32px;display:flex;align-items:center;">Limpar filtros</button>
+      </div>
+
+      <!-- Tags de filtros ativos -->
+      <div id="activeFilters" class="active-filters"></div>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full">
@@ -239,6 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
   userData = JSON.parse(u);
   document.getElementById('userName').textContent = userData.nome;
   document.getElementById('userAvatar').textContent = userData.nome.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  setPeriod('30d'); // inicializa filtro com últimos 30 dias
   atualizar();
   // Auto-refresh a cada 30s
   setInterval(atualizar, 30000);
@@ -363,11 +465,23 @@ async function loadExecucoes(pagina=1) {
   if (status)  url += `&status=${status}`;
   if (dataDe)  url += `&data_de=${dataDe}`;
   if (dataAte) url += `&data_ate=${dataAte}`;
+
+  // Loading state
+  document.getElementById('execTableBody').innerHTML =
+    '<tr><td colspan="8" class="text-center py-16"><span class="spinner mx-auto"></span></td></tr>';
+  document.getElementById('resultsInfo').innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px"></span>';
+
   try {
     const d = await api(url);
     const tbody = document.getElementById('execTableBody');
+    const total = d.total || 0;
+    const ini = ((pagina - 1) * 15) + 1;
+    const fim = Math.min(pagina * 15, total);
+    document.getElementById('resultsInfo').innerHTML =
+      total ? `Exibindo <strong>${ini}–${fim}</strong> de <strong>${total}</strong> execuções` : '';
+
     if (!d.items.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-12 text-slate-400">Nenhuma execução encontrada</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-16 text-slate-400"><div class="flex flex-col items-center gap-2"><svg width="40" height="40" fill="none" viewBox="0 0 24 24"><path stroke="#cbd5e1" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Nenhuma execução encontrada para este filtro</td></tr>';
     } else {
       tbody.innerHTML = d.items.map(item => {
         const cls = item.status === 'sucesso' ? 'badge-sucesso' : item.status === 'erro' ? 'badge-erro' : 'badge-parcial';
@@ -379,7 +493,7 @@ async function loadExecucoes(pagina=1) {
         else if (ms < 60000) tempo = (ms/1000).toFixed(1) + 's';
         else tempo = Math.floor(ms/60000) + 'm ' + Math.floor((ms%60000)/1000) + 's';
         return `<tr>
-          <td class="font-mono text-xs text-brand-600">${item.execution_id.slice(0,14)}…</td>
+          <td class="font-mono text-xs text-brand-600">${escHtml(item.execution_id || '').slice(0,14)}…</td>
           <td><span class="badge ${cls}">${lbl}</span></td>
           <td class="text-center font-medium">${item.total_documentos ?? 0}</td>
           <td class="text-center text-emerald-600 font-semibold">${item.documentos_aprovados ?? 0}</td>
@@ -404,11 +518,98 @@ async function loadExecucoes(pagina=1) {
   } catch(e) { console.error(e); }
 }
 
+let filtroAtivo = '30d'; // período selecionado (hoje|7d|30d|mes|custom)
+
+function fmtDate(d) {
+  return d.toISOString().split('T')[0]; // YYYY-MM-DD
+}
+
+function setPeriod(tipo) {
+  filtroAtivo = tipo;
+  const hoje = new Date();
+  let de = null, ate = null;
+
+  if (tipo === 'hoje') {
+    de = fmtDate(hoje);
+    ate = fmtDate(hoje);
+  } else if (tipo === '7d') {
+    const d = new Date(hoje); d.setDate(d.getDate() - 7);
+    de = fmtDate(d);
+    ate = fmtDate(hoje);
+  } else if (tipo === '30d') {
+    const d = new Date(hoje); d.setDate(d.getDate() - 30);
+    de = fmtDate(d);
+    ate = fmtDate(hoje);
+  } else if (tipo === 'mes') {
+    de = fmtDate(new Date(hoje.getFullYear(), hoje.getMonth(), 1));
+    ate = fmtDate(hoje);
+  } else if (tipo === 'custom') {
+    de = null; ate = null;
+  }
+
+  // Atualiza chips visuais
+  ['hoje','7d','30d','mes','custom'].forEach(t => {
+    document.getElementById('chip-' + t).classList.toggle('active', t === tipo);
+  });
+
+  // Mostra/esconde seletor de data custom
+  document.getElementById('dateRangeCustom').style.display = (tipo === 'custom') ? 'flex' : 'none';
+  if (tipo !== 'custom') {
+    document.getElementById('filterDe').value  = de || '';
+    document.getElementById('filterAte').value = ate || '';
+  }
+
+  atualizarTagsAtivas();
+  loadExecucoes(1);
+}
+
+function atualizarTagsAtivas() {
+  const tags = [];
+  const status = document.getElementById('filterStatus').value;
+  const statusLabels = { sucesso:'✓ Sucesso', erro:'✗ Erro', parcial:'◑ Parcial' };
+
+  if (filtroAtivo !== 'custom' && filtroAtivo !== '30d') {
+    const labels = { hoje:'Hoje', '7d':'Últimos 7 dias', mes:'Este mês' };
+    tags.push({ label: labels[filtroAtivo] || filtroAtivo, tipo: 'periodo', id: filtroAtivo });
+  }
+  if (status) {
+    tags.push({ label: statusLabels[status] || status, tipo: 'status', id: status });
+  }
+  const de  = document.getElementById('filterDe').value;
+  const ate = document.getElementById('filterAte').value;
+  if (de || ate) {
+    const label = (de && ate) ? `${fmtDisplay(de)} → ${fmtDisplay(ate)}` : (de ? `A partir de ${fmtDisplay(de)}` : `Até ${fmtDisplay(ate)}`);
+    tags.push({ label, tipo: 'data', id: 'data' });
+  }
+
+  const el = document.getElementById('activeFilters');
+  el.innerHTML = tags.map(t =>
+    `<span class="filter-tag">${t.label}<button onclick="${t.tipo==='periodo' ? `setPeriod('${t.id}')` : t.tipo==='status' ? `removerFiltro('status')` : `removerFiltro('data')`}" aria-label="Remover">✕</button></span>`
+  ).join('');
+}
+
+function fmtDisplay(v) {
+  const [y,m,d] = v.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function removerFiltro(tipo) {
+  if (tipo === 'status') document.getElementById('filterStatus').value = '';
+  if (tipo === 'data')   { document.getElementById('filterDe').value = ''; document.getElementById('filterAte').value = ''; }
+  atualizarTagsAtivas();
+  loadExecucoes(1);
+}
+
+function applyFilters() {
+  atualizarTagsAtivas();
+  loadExecucoes(1);
+}
+
 function clearFilters() {
   document.getElementById('filterStatus').value = '';
-  document.getElementById('filterDe').value = '';
-  document.getElementById('filterAte').value = '';
-  loadExecucoes(1);
+  document.getElementById('filterDe').value    = '';
+  document.getElementById('filterAte').value    = '';
+  setPeriod('30d');
 }
 
 async function verDetalhes(execId) {
@@ -435,3 +636,126 @@ async function verDetalhes(execId) {
 </script>
 </body>
 </html>
+
+<!-- Modal de detalhes -->
+<div id="modalDetalhes" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <h2 id="modalTitulo">Detalhes da Execução</h2>
+        <span id="modalSubtitulo">—</span>
+      </div>
+      <button class="modal-close" onclick="fecharModal()" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- preenchido via JS -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-modal-ok" onclick="fecharModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function fecharModal() {
+  document.getElementById('modalDetalhes').classList.remove('show');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModal(); });
+document.getElementById('modalDetalhes').addEventListener('click', e => {
+  if (e.target === e.currentTarget) fecharModal();
+});
+
+async function verDetalhes(execId) {
+  const d = await api(`/api/dashboard/execucoes?pagina=1&por_pagina=100`);
+  const item = d.items.find(i => i.execution_id === execId);
+  if (!item) return;
+
+  const nodes = item.nodes_executados || [];
+  const nodesList = Array.isArray(nodes) && nodes.length
+    ? nodes.map(n => {
+        const name = typeof n === 'string' ? n : (n.nome || n.name || JSON.stringify(n).slice(0,30));
+        return `<span class="node-tag">${escHtml(name)}</span>`;
+      }).join('')
+    : '<span style="color:#94a3b8;font-size:13px;">Nenhum registro de nodes</span>';
+
+  const statusChip = {
+    sucesso: '<span class="detail-chip chip-sucesso">✓ Sucesso</span>',
+    erro:    '<span class="detail-chip chip-erro">✗ Erro</span>',
+    parcial: '<span class="detail-chip chip-parcial">◑ Parcial</span>'
+  }[item.status] || item.status;
+
+  const fmtData = v => v ? new Date(v).toLocaleString('pt-BR') : '—';
+  const fmtMs   = v => v ? `${(v/1000).toFixed(1)}s` : '—';
+
+  let html = `<div class="detail-grid">
+
+    <div class="detail-item">
+      <div class="detail-label">Status</div>
+      <div class="detail-value">${statusChip}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Duração</div>
+      <div class="detail-value">${fmtMs(item.duracao_ms)}</div>
+    </div>
+
+    <div class="detail-item">
+      <div class="detail-label">Documentos Processados</div>
+      <div class="detail-value">${item.total_documentos ?? 0}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Workflow</div>
+      <div class="detail-value sm">${escHtml(item.workflow_nome || '—')}</div>
+    </div>
+
+    <div class="detail-item">
+      <div class="detail-label">Aprovados</div>
+      <div class="detail-value" style="color:#059669">${item.documentos_aprovados ?? 0}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Rejeitados</div>
+      <div class="detail-value" style="color:#dc2626">${item.documentos_rejeitados ?? 0}</div>
+    </div>
+
+    <div class="detail-item detail-full">
+      <div class="detail-label">Execution ID</div>
+      <div class="detail-value sm">${escHtml(item.execution_id || '—')}</div>
+    </div>
+
+    <div class="detail-item">
+      <div class="detail-label">Iniciado em</div>
+      <div class="detail-value sm">${fmtData(item.iniciado_em)}</div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">Finalizado em</div>
+      <div class="detail-value sm">${fmtData(item.finalizado_em)}</div>
+    </div>
+
+    <div class="detail-item detail-full">
+      <div class="detail-label">Nodes Executados</div>
+      <div class="nodes-list">${nodesList}</div>
+    </div>`;
+
+  if (item.erro_mensagem) {
+    html += `
+    <div class="erro-box detail-full">
+      <div class="erro-title">✗ Erro Registrado</div>
+      <div class="erro-msg">${escHtml(item.erro_mensagem)}</div>
+      ${item.erro_node ? `<div style="margin-top:6px;font-size:12px;color:#dc2626;"><strong>Node:</strong> ${escHtml(item.erro_node)}</div>` : ''}
+    </div>`;
+  }
+
+  html += `</div>`;
+
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalSubtitulo').textContent = item.execution_id
+    ? `ID: ${item.execution_id.slice(0, 18)}…`
+    : '';
+  document.getElementById('modalDetalhes').classList.add('show');
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+</script>

@@ -1,9 +1,9 @@
 # DASHBOARDS — Project State
 
-**Última atualização:** 2026-08-11
+**Última atualização:** 2026-08-11 05:00
 **Dono:** Heliton | **Empresa:** HS Informática DF / NoxTec
 **Domínio alvo:** `dashboard.dashapi.com.br`
-**Status geral:** ✅ **FUNCIONANDO LOCAL** | ⏸ Deploy em produção pausado
+**Status geral:** ✅ **EM PRODUÇÃO** | `running:healthy` desde 2026-08-11
 
 ---
 
@@ -65,11 +65,13 @@ dashboard.dashapi.com.br
 ## ⏸ O QUE FALTA
 
 ### Deploy em produção
-- [ ] Subir a imagem Docker pro Coolify (app já criada com UUID `hqdeb44ims9pw8p3of53aacw`)
-- [ ] Configurar domínio `dashboard.dashapi.com.br` no Coolify
-- [ ] Apontar DNS do `dashboard.dashapi.com.br` pro IP do Coolify (Cloudflare/Hetzner)
-- [ ] Ativar SSL via Let's Encrypt
-- [ ] Confirmar que `http://dashboard.dashapi.com.br` retorna 200
+- [x] Subir a imagem Docker pro Coolify ✅ (UUID `wl0kw5p4ntlce2h4rhkmf9uz`)
+- [x] Configurar domínio `dashboard.dashapi.com.br` no Coolify ✅ (Traefik labels)
+- [x] DNS `dashboard.dashapi.com.br → 2.25.160.104` ✅ (sslip.io + Cloudflare)
+- [x] SSL via Let's Encrypt (Traefik automático) ✅
+- [x] `/health` endpoint para healthcheck ✅
+- [x] Healthcheck Docker corrigido para `/health` ✅
+- [x] Confirmado: `https://dashboard.dashapi.com.br` retorna 200 ✅
 
 ### Adicionar o node ao workflow n8n
 - [ ] Abrir workflow `Xbx1s6zFILf096gY` no n8n.redeis.com.br
@@ -206,7 +208,7 @@ x-webhook-key: noxtec-paineis-2026-secret
 |---|---|
 | Coolify | `coolify.declaranotafiscal.com.br` |
 | Token Coolify | `4\|claude-access-token-hs-informatica-2026` |
-| App Coolify UUID | `hqdeb44ims9pw8p3of53aacw` (parado) |
+| App Coolify UUID | `wl0kw5p4ntlce2h4rhkmf9uz` ✅ running |
 | n8n NoxTec | `n8n.redeis.com.br` |
 | Workflow Alvo | `Xbx1s6zFILf096gY` |
 | Domínio alvo | `dashboard.dashapi.com.br` |
@@ -244,9 +246,7 @@ x-webhook-key: noxtec-paineis-2026-secret
 
 1. **Campos `total_documentos` podem vir zerados** — Depende de como o workflow n8n retorna esses dados. Validar após primeira execução real.
 
-2. **Token GitHub expirado** — Impediu subir via Git. Solução: usar Docker compose direto (já preparado).
 
-3. **DNS não configurado** — `dashboard.dashapi.com.br` ainda não aponta pro Coolify.
 
 ---
 
@@ -254,17 +254,14 @@ x-webhook-key: noxtec-paineis-2026-secret
 
 | Item | Status |
 |---|---|
-| Backend FastAPI | ✅ Funcionando local |
-| Frontend Hub | ✅ Funcionando local |
-| Dashboard Validação Documentos | ✅ Funcionando local |
+| Backend FastAPI | ✅ Produção — `dashboard.dashapi.com.br` |
+| Frontend Hub | ✅ Produção |
+| Dashboard Validação Documentos | ✅ Produção |
 | Schema multi-painel | ✅ Pronto |
-| Webhook endpoint | ✅ Testado |
-| Node n8n config | ✅ Pronto pra colar |
-| Dockerfile | ✅ Criado |
-| docker-compose.yml | ✅ Criado |
-| App no Coolify | ⏸ Criada mas sem deploy |
-| DNS produção | ❌ Pendente |
-| SSL | ❌ Pendente |
-| Node adicionado ao n8n | ❌ Pendente (ação do usuário) |
+| Webhook endpoint | ✅ Testado — `{"ok":true}` |
+| Dockerfile | ✅ HEALTHCHECK → `/health` |
+| App no Coolify | ✅ `wl0kw5p4ntlce2h4rhkmf9uz` `running:healthy` |
+| SSL/Let's Encrypt | ✅ Auto via Traefik |
+| Node n8n | ✅ Adicionado via API — `DASHBOARD Metrics` em `Xbx1s6zFILf096gY` |
 
 **Para retomar deploy:** responder com a mensagem "subir pro coolify" e o estado está todo neste arquivo.
