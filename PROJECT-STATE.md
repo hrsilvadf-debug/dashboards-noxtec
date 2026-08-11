@@ -1,9 +1,9 @@
 # DASHBOARDS — Project State
 
-**Última atualização:** 2026-08-11 05:00
+**Última atualização:** 2026-08-11 06:00
 **Dono:** Heliton | **Empresa:** HS Informática DF / NoxTec
 **Domínio alvo:** `dashboard.dashapi.com.br`
-**Status geral:** ✅ **EM PRODUÇÃO** | `running:healthy` desde 2026-08-11
+**Status geral:** ✅ **EM PRODUÇÃO** | `running:healthy` | commit `65ef1c2`
 
 ---
 
@@ -47,6 +47,8 @@ dashboard.dashapi.com.br
   - Donut de status
   - Tabela paginada com filtros (status, data)
   - Auto-refresh 30s
+  - **Modal "Ver"** — modal centralizado com backdrop blur, chips de status, tags de nodes, grid de detalhes (executado 2026-08-11)
+  - **Filtros de período funcionais** — chips Hoje / 7 dias / 30 dias / Este mês / Personalizado com UI responsiva (executado 2026-08-11)
 
 ### Deploy
 - **Dockerfile** criado em `validacao-documentos/Dockerfile`
@@ -55,8 +57,8 @@ dashboard.dashapi.com.br
 - Domínio temporário Coolify: `http://hqdeb44ims9pw8p3of53aacw.2.25.160.104.sslip.io`
 
 ### Integração n8n
-- **Node config:** `n8n-nodes/validacao-documentos.json`
-- Workflow alvo: `Xbx1s6zFILf096gY` em `https://n8n.redeis.com.br/workflow/Xbx1s6zFILf096gY`
+- **Node adicionado via API** em 2026-08-11 — `DASHBOARD Metrics` (id: `dashboards-noxtec-metrics`) conectado em `DATACUSTOM` + `DATACUSTOM1`
+- Workflow: `Xbx1s6zFILf096gY` em `https://n8n.redeis.com.br/workflow/Xbx1s6zFILf096gY`
 - Continue On Fail = `true` (não trava se painel cair)
 - Header de segurança: `x-webhook-key: noxtec-paineis-2026-secret`
 
@@ -72,13 +74,11 @@ dashboard.dashapi.com.br
 - [x] `/health` endpoint para healthcheck ✅
 - [x] Healthcheck Docker corrigido para `/health` ✅
 - [x] Confirmado: `https://dashboard.dashapi.com.br` retorna 200 ✅
+- [x] **Bug crítico corrigido (2026-08-11):** `StaticFiles(headers=...)` crashava o container — substituído por `CacheControlStaticFiles` custom class
 
 ### Adicionar o node ao workflow n8n
-- [ ] Abrir workflow `Xbx1s6zFILf096gY` no n8n.redeis.com.br
-- [ ] Adicionar node **HTTP Request** ao final da cadeia
-- [ ] Configurar com base no `n8n-nodes/validacao-documentos.json`
-- [ ] **Marcar Continue On Fail = true**
-- [ ] Testar uma execução real e validar se aparece no painel
+- [x] Node `DASHBOARD Metrics` adicionado via API ✅ — posicionado em [3856, 3392]
+- [ ] **Testar execução real** — rodar workflow e validar se dados chegam no painel
 
 ### Segurança (PÓS-DEPLOY)
 - [ ] Trocar senha padrão do admin (atualmente `admin123`)
@@ -245,6 +245,9 @@ x-webhook-key: noxtec-paineis-2026-secret
 ## 🐛 Issues Conhecidas
 
 1. **Campos `total_documentos` podem vir zerados** — Depende de como o workflow n8n retorna esses dados. Validar após primeira execução real.
+2. **Bug StaticFiles crash (RESOLVIDO 2026-08-11)** — `StaticFiles(headers=...)` não é parâmetro válido em Starlette. Substituído por `CacheControlStaticFiles` custom class em `main.py`.
+3. **Bug cache Docker (RESOLVIDO 2026-08-11)** — imagens Docker eram cacheadas entre deploys. Usar `ARG CACHEBUST` com timestamp no Dockerfile.
+4. **Bug HTML modal visível como texto** — duplicate `</style>` fechava o bloco CSS antes da hora. Consertado removendo o tag espúrio.
 
 
 
@@ -263,5 +266,30 @@ x-webhook-key: noxtec-paineis-2026-secret
 | App no Coolify | ✅ `wl0kw5p4ntlce2h4rhkmf9uz` `running:healthy` |
 | SSL/Let's Encrypt | ✅ Auto via Traefik |
 | Node n8n | ✅ Adicionado via API — `DASHBOARD Metrics` em `Xbx1s6zFILf096gY` |
+| Modal "Ver" | ✅ Moderno/centralizado com backdrop blur |
+| Filtros de período | ✅ Chips funcionais (Hoje/7d/30d/Mês/Personalizado) |
+| Cache container fix | ✅ `CacheControlStaticFiles` em `main.py` |
 
-**Para retomar deploy:** responder com a mensagem "subir pro coolify" e o estado está todo neste arquivo.
+---
+
+## 📋 Resumo da Sessão 2026-08-11
+
+### Problema original
+- Modal "Ver" aparecia como `alert()` popup cru
+- Filtros de período não funcionavam (chips sem ação)
+- CSS do modal aparecia como texto no topo da página
+
+### Correções aplicadas
+1. **Modal "Ver"** — reconstruído com overlay centralizado, backdrop blur, chips de status (sucesso/erro/parcial), tags de nodes, grid de detalhes, scroll interno
+2. **Filtros de período** — chips com `setPeriod()` funcional + `applyFilters()` que atualiza a tabela + feedback visual de chip ativo
+3. **CSS como texto** — duplicate `</style>` no HTML removido; HTML verificado no GitHub: 1 `</style>`, 1 `</body>`, 1 `</html>`
+4. **Container crash** — `StaticFiles(headers=...)` não é parâmetro válido; substituído por `CacheControlStaticFiles` custom class
+5. **n8n node** — `DASHBOARD Metrics` adicionado via API ao workflow `Xbx1s6zFILf096gY` em 2026-08-11
+
+### Pendência principal
+- **Testar execução real do workflow n8n** — validar que os dados chegam no painel em produção
+- Fazer um teste: rodar o workflow `Xbx1s6zFILf096gY` e verificar se `/api/dashboard/execucoes` retorna dados
+
+---
+
+**Para retomar amanhã:** context está neste arquivo. Deploy UUID `k87hps37s4tj646eu5ycyxis`, commit `65ef1c2`.
