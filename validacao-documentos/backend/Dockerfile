@@ -12,15 +12,15 @@ COPY index.html validacao-documentos.html ./
 
 RUN mkdir -p /app/data
 
-ENV PORT=8001
+ENV PORT=80
 ENV HOST=0.0.0.0
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONIOENCODING=utf-8
 ENV WEBHOOK_KEY=noxtec-paineis-2026-secret
 
-EXPOSE 8001
+EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/api/paineis').read()" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:80/api/paineis').read()" || exit 1
 
 CMD ["python", "main.py"]
