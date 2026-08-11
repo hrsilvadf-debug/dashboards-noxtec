@@ -109,10 +109,10 @@ def health():
 
 # Servir frontend estático
 if FRONT_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(FRONT_DIR)), name="static")
+    app.mount("/static", StaticFiles(directory=str(FRONT_DIR), headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}), name="static")
 elif (BASE_DIR / "index.html").exists():
     # Quando frontend files estão copiados direto no backend
-    app.mount("/static", StaticFiles(directory=str(BASE_DIR)), name="static")
+    app.mount("/static", StaticFiles(directory=str(BASE_DIR), headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"}), name="static")
 
 # ============================================================
 # AUTH
